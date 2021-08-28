@@ -40,7 +40,7 @@ add_action('admin_enqueue_scripts', 'woo_admin_order_assets');
 
 function woo_admin_order_menu_page()
 {
-    add_menu_page('Create Order', 'Creat Order', 'activate_plugins', 'woo-admin-order.php', 'woo_admin_page', 'dashicons-tickets', 6);
+    add_menu_page('Create Order', 'Create Order', 'activate_plugins', 'woo-admin-order.php', 'woo_admin_page', 'dashicons-tickets', 6);
 }
 
 
@@ -54,7 +54,7 @@ function woo_admin_page()
     ?>
 
     <div class="wrap">
-        <h1 class="wp-heading-inline">Creat an Order</h1>
+        <h1 class="wp-heading-inline">Create an Order</h1>
 
         <div class="container flex justify-center">
 
