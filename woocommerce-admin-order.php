@@ -197,7 +197,8 @@ function woo_admin_page()
 
 
 add_action('wp_ajax_woo_admin_order_submit', function () {
-//    die();
+
+    global $woocommerce;
 
     $first_name = sanitize_text_field($_POST['first_name']);
     $last_name = sanitize_text_field($_POST['last_name']);
@@ -206,55 +207,33 @@ add_action('wp_ajax_woo_admin_order_submit', function () {
     $country = sanitize_text_field($_POST['country']);
     $total = floatval($_POST['total']);
 
+
+    $address = array(
+        'first_name' => $first_name,
+        'last_name' => $last_name,
+        'address_1' => $address_line,
+        'city' => $city,
+        'country' => $country
+    );
+
+    // Now we create the order
+    $order = wc_create_order();
+
+    // The add_product() function below is located in /plugins/woocommerce/includes/abstracts/abstract_wc_order.php
+
+
     $product_data = $_POST['product_data'];
 
 
-
-    $order = new WC_Order();
-    $order->set_total($total);
-    $order->set_billing_first_name($first_name);
-    $order->set_billing_last_name($last_name);
-    $order->set_billing_address_1($address_line);
-    $order->set_billing_city($city);
-    $order->set_billing_country($country);
-    $order->set_shipping_first_name($first_name);
-    $order->set_shipping_last_name($last_name);
-    $order->set_shipping_address_1($address_line);
-    $order->set_shipping_city($city);
-    $order->set_shipping_country($country);
-    $order->save();
-    $order_id = $order->get_id();
-
     foreach ($product_data as $key) {
-        $item  = new WC_Order_Item_Product();
-        $item->set_order_id($order_id);
-        $item->set_product_id(intval($product_data[$key]['product_id']));
-        $item->set_quantity(intval($product_data[$key]['quantity']));
-        $item->set_total(intval($product_data[$key]['quantity']) * floatval($product_data[$key]['price']));
-        $item->save();
+        $order->add_product(wc_get_product(intval($key['product_id'])), intval($key['quantity']));
     }
-    /*$product = new WC_Product_Simple();
-    $product->set_name( 'My Product' );
-    $product->set_slug( 'myproduct' );
-    $product->set_description( 'A new simple product' );
-    $product->set_regular_price( '9.50' );
-    $product->save();
 
-    $product_id = $product->get_id();*/
+    $order->set_address($address, 'billing');
+    $order->set_address($address, 'shipping');
+    $order->calculate_totals();
+    $order->update_status("Completed", 'Imported order', TRUE);
+
 
     echo json_encode($_POST);
-//    exit();
-    /*echo "<pre>";
-    print_r($_POST);
-    echo "</pre>";
-
-    die();*/
-
-    /*$nonce = sanitize_text_field($_POST['nonce']);
-    if (wp_verify_nonce($nonce, 'woo-admin-order-submit')) {
-        echo '<p class="text-white bg-green-500 px-4 py-6 rounded">Successfully order inserted</p>';
-        die();
-    }
-
-    wp_redirect(admin_url('admin.php?page=woo-admin-order.php'));*/
 });

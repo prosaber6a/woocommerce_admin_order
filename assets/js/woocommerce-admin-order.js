@@ -1,4 +1,4 @@
-var orderItems = [{product_id: 58, quantity: 1, price: "15"}];
+var orderItems = [];
 
 var url = JSON.parse(action_url)[0];
 console.log(url)
@@ -44,7 +44,6 @@ const productData = JSON.parse(products);
 
             for (let i = 0; i < productData.length; i++) {
                 if (productData[i].id === id) {
-                    // console.log(productData[i]);
                     renderTable(productData[i]);
                     break;
                 }
@@ -87,14 +86,9 @@ const productData = JSON.parse(products);
 
     }
 
-    $('input[name=quantity]').on('change', () => {
-        console.log('qty');
-    });
-
 
     $('#submit').click(function () {
 
-        // console.log(orderItems.length)
         $('#submit').attr('disabled', '');
         $('#submit').addClass('disabled:opacity-50 cursor-wait');
         $('#submit').removeClass('hover:bg-indigo-800');
@@ -130,9 +124,6 @@ const productData = JSON.parse(products);
             return false;
         }
 
-        // console.log(first_name, last_name, address_line, city, country, nonce);
-        // $('form').attr('action', url);
-        // $('form').attr('method', 'POST');
 
 
         $.ajax({
@@ -151,7 +142,8 @@ const productData = JSON.parse(products);
             type: 'post',
             datatype: 'json',
             success: function (response) {
-                console.log("response: "+response);
+                alert('Order created successfully');
+                location.reload();
             },
             error: function (response) {
                 console.log("error", response)
