@@ -1,0 +1,68 @@
+.content {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
+.order_table_container {
+    background-color: #fff;
+    width: 545px;
+    padding: 10px;
+}
+
+#orderitems_table {
+    width: 100%;
+}
+#orderitems_table tbody td img{
+    vertical-align: middle;
+}
+
+.deletebtn {
+    color: red;
+    border: none;
+    background-color: transparent;
+    cursor: pointer;
+}
+
+.deletebtn:hover {
+    color: #ac000f;
+}
+
+.quantity_field {
+    width: 70px;
+}
+
+.mb-20 {
+    margin-bottom: 20px;
+}
+
+#products_select_box {
+    width: 100%;
+}
+
+img {
+    vertical-align: middle !important;
+    width: 50px !important;
+}
+
+.select2-selection__rendered img {
+    display: none;
+}
+
+.woo-admin-order-select-option {
+    display: flex;
+}
+
+.woo-admin-order-select-option span {
+    display: block;
+    padding-left: 20px;
+}
+
+.order_info {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.country_container {
+    margin-top: 20px;
+}

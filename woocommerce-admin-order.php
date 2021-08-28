@@ -15,81 +15,246 @@
  */
 
 
-function woo_admin_order_textdomain_load() {
-	load_plugin_textdomain( 'woo_admin_order', false, plugin_dir_url( __FILE__ ) . '/languages' );
+function woo_admin_order_textdomain_load()
+{
+    load_plugin_textdomain('woo_admin_order', false, plugin_dir_url(__FILE__) . '/languages');
 }
 
-add_action( 'plugins_loaded', 'woo_admin_order_textdomain_load' );
+add_action('plugins_loaded', 'woo_admin_order_textdomain_load');
 
 
-function bangla_phonetic_admin_assets ($screen) {
-	if ('woo-admin-order.php' == $screen || 'post-new.php' == $screen) {
+function woo_admin_order_assets($screen)
+{
 
-		wp_enqueue_script('bootstrap-css', plugin_dir_url( __FILE__ ) . '/assets/js/phonetic.driver.js', null, '1.0.0', true);
-		wp_enqueue_script('bangla-phonetic-engine-js', plugin_dir_url( __FILE__ ) . '/assets/js/engine.js', null, '1.0.0', true);
-		wp_enqueue_script('bangla-phonetic-quick-tag-js', plugin_dir_url( __FILE__ ) . '/assets/js/qt.js', null, '1.0.0', true);
-	}
+    if ($screen == 'toplevel_page_woo-admin-order') {
+
+        wp_enqueue_style('select2-css', '//cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css');
+        wp_enqueue_style('tailwind-css', '//unpkg.com/tailwindcss@^2/dist/tailwind.min.css');
+//        wp_enqueue_style('woocommerce-admin-order-css', plugin_dir_url(__FILE__) . '/assets/css/woocommerce-admin-order.css', null, time());
+        wp_enqueue_script('select2-js', '//cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js', ['jquery'], null, true);
+        wp_enqueue_script('woocommerce-admin-order-js', plugin_dir_url(__FILE__) . '/assets/js/woocommerce-admin-order.js', null, time(), true);
+    }
 }
 
-add_action( 'admin_enqueue_scripts', 'bangla_phonetic_admin_assets' );
+add_action('admin_enqueue_scripts', 'woo_admin_order_assets');
 
-function woo_admin_order_menu_page() {
-	/*$user = wp_get_current_user();
-	echo "<pre>";
-	print_r($user);
-	echo "</pre>";
-
-	die();*/
-	add_menu_page( 'Create Order', 'Creat Order', 'activate_plugins', 'woo-admin-order.php', 'woo_admin_page', 'dashicons-tickets', 6 );
+function woo_admin_order_menu_page()
+{
+    add_menu_page('Create Order', 'Creat Order', 'activate_plugins', 'woo-admin-order.php', 'woo_admin_page', 'dashicons-tickets', 6);
 }
 
 
-add_action( 'admin_menu', 'woo_admin_order_menu_page' );
+add_action('admin_menu', 'woo_admin_order_menu_page');
 
 
-function woo_admin_page() {
-	?>
+function woo_admin_page()
+{
+
+
+    ?>
 
     <div class="wrap">
         <h1 class="wp-heading-inline">Creat an Order</h1>
 
+        <div class="container flex justify-center">
 
-	<?php
 
-	if ( ! class_exists( 'WooCommerce' ) ) {
-		?>
-        <h1 class="">Please setup your woocommerce store</h1>
-		<?php
-	} else {
+            <?php
 
-		?>
-        <div style="display: flex; justify-items: center; align-items: center">
-            <div style="width: 500px; background-color: white;">
-                <table>
-                    <thead>
-                    <th>Item</th>
-                    <th>Quantity</th>
-                    <th>Price</th>
-                    </thead>
-                    <tbody>
-                    <tr>
-                        <td style="vertical-align: middle">
-                            <img src="http://localhost/woocom/wp-content/uploads/2021/08/hoodie_3_front-150x150.jpg" alt="" width="100"> Denim Hoody
-                        </td>
-                        <td>
-                            <input type="number" name="quantity">
-                        </td>
-                        <td>$4525</td>
-                    </tr>
-                    </tbody>
-                </table>
-            </div>
+            if (!in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_option('active_plugins')))) {
+                ?>
+                <h1 class="text-red">Please setup your woocommerce store</h1>
+                <?php
+            } else {
+
+                global $woocommerce;
+                $countries_obj = new WC_Countries();
+                $countries = $countries_obj->__get('countries');
+
+                $products = wc_get_products([
+                    'status' => ['publish'],
+                    'return' => 'objects',
+                    'paginate' => false,
+                    'limit' => -1,
+                    'stock_status' => 'instock',
+                ]);
+
+
+//                echo "<pre>";
+//                print_r($products);
+
+//                echo $actual_link;
+//                echo "</pre>";
+//                die();
+
+                ?>
+
+                <div class="w-2/4 bg-white p-3">
+
+                    <form action="<?php echo admin_url('admin-post.php'); ?>" method="post" id="form">
+
+                        <?php
+                        wp_nonce_field('woo_admin_order_nonce', 'nonce');
+                        ?>
+
+
+                        <div class="my-4 text-center">
+                            <select name="" class="js-states w-full" id="products_select_box">
+                                <option value="" selected>Select a product</option>
+                                <?php
+                                $products_arr = [];
+                                foreach ($products as $product):
+                                    $_thumbnail = wp_get_attachment_image_url($product->image_id, 'thumbnail');
+                                    $_product_arr['id'] = $product->id;
+                                    $_product_arr['img'] = $_thumbnail;
+                                    $_product_arr['price'] = $product->price;
+                                    $_product_arr['name'] = $product->name;
+                                    $products_arr[] = $_product_arr;
+                                    ?>
+                                    <option value="<?php echo $product->id; ?>" data-image="<?php echo $_thumbnail; ?>"
+                                            data-name="<?php echo $product->name; ?>">
+                                        <?php
+                                        echo "SKU: " . $product->sku;
+                                        ?>
+                                    </option>
+
+                                <?php
+                                endforeach;
+                                ?>
+                            </select>
+                        </div>
+
+                        <table id="orderitems_table" class="table-auto w-full">
+                            <thead>
+                            <tr class="border-2 border-black border-l-0 border-r-0 border-t-0 mb-1">
+                                <th>Item</th>
+                                <th>Quantity</th>
+                                <th>Price</th>
+                                <th>Action</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+
+                            </tbody>
+                            <tfoot>
+                            <tr>
+                                <td></td>
+                                <td></td>
+                                <th>Total: <span id="total_price">$0</span></th>
+                            </tr>
+                            </tfoot>
+                        </table>
+
+                        <h2 class="border-b-2 border-gray-400 mb-4 mt-12 text-2xl text-center">Customer</h2>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <input type="text" id="cust_first_name" class="w-full" placeholder="First Name">
+                            </div>
+                            <div>
+                                <input type="text" id="cust_last_name" class="w-full" placeholder="Last Name">
+                            </div>
+                        </div>
+
+                        <h2 class="border-b-2 border-gray-400 mb-4 mt-12 text-2xl text-center">Address</h2>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <input type="text" id="address_line" class="w-full" placeholder="Address Line">
+                            </div>
+                            <div>
+                                <input type="text" id="city" class="w-full" placeholder="City">
+                            </div>
+                        </div>
+                        <div class="mt-2 text-center">
+
+                            <select id="country" class="w-full">
+                                <option value="" disabled selected>Select country</option>
+                                <?php foreach ($countries as $key => $value): ?>
+                                    <option value="<?php echo $key; ?>"><?php echo $value; ?></option>
+                                <?php endforeach; ?>
+                            </select>
+
+                        </div>
+                        <div class="mt-4 text-center">
+                            <button type="button" id="submit"
+                                    class="px-6 py-4 bg-indigo-400 text-white text-xl hover:bg-indigo-800">Save Order
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <?php
+
+                wp_localize_script('woocommerce-admin-order-js', 'products', json_encode($products_arr));
+                wp_localize_script('woocommerce-admin-order-js', 'action_url', json_encode([admin_url('admin-ajax.php')]));
+            }
+            ?>
         </div>
-		<?php
-	}
-	?>
     </div>
-	<?php
+    <?php
 
 
 }
+
+
+add_action('wp_ajax_woo_admin_order_submit', function () {
+//    die();
+
+    $first_name = sanitize_text_field($_POST['first_name']);
+    $last_name = sanitize_text_field($_POST['last_name']);
+    $address_line = sanitize_text_field($_POST['address_line']);
+    $city = sanitize_text_field($_POST['city']);
+    $country = sanitize_text_field($_POST['country']);
+    $total = floatval($_POST['total']);
+
+    $product_data = $_POST['product_data'];
+
+
+
+    $order = new WC_Order();
+    $order->set_total($total);
+    $order->set_billing_first_name($first_name);
+    $order->set_billing_last_name($last_name);
+    $order->set_billing_address_1($address_line);
+    $order->set_billing_city($city);
+    $order->set_billing_country($country);
+    $order->set_shipping_first_name($first_name);
+    $order->set_shipping_last_name($last_name);
+    $order->set_shipping_address_1($address_line);
+    $order->set_shipping_city($city);
+    $order->set_shipping_country($country);
+    $order->save();
+    $order_id = $order->get_id();
+
+    foreach ($product_data as $key) {
+        $item  = new WC_Order_Item_Product();
+        $item->set_order_id($order_id);
+        $item->set_product_id(intval($product_data[$key]['product_id']));
+        $item->set_quantity(intval($product_data[$key]['quantity']));
+        $item->set_total(intval($product_data[$key]['quantity']) * floatval($product_data[$key]['price']));
+        $item->save();
+    }
+    /*$product = new WC_Product_Simple();
+    $product->set_name( 'My Product' );
+    $product->set_slug( 'myproduct' );
+    $product->set_description( 'A new simple product' );
+    $product->set_regular_price( '9.50' );
+    $product->save();
+
+    $product_id = $product->get_id();*/
+
+    echo json_encode($_POST);
+//    exit();
+    /*echo "<pre>";
+    print_r($_POST);
+    echo "</pre>";
+
+    die();*/
+
+    /*$nonce = sanitize_text_field($_POST['nonce']);
+    if (wp_verify_nonce($nonce, 'woo-admin-order-submit')) {
+        echo '<p class="text-white bg-green-500 px-4 py-6 rounded">Successfully order inserted</p>';
+        die();
+    }
+
+    wp_redirect(admin_url('admin.php?page=woo-admin-order.php'));*/
+});
