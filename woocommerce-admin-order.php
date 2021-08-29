@@ -80,13 +80,6 @@ function woo_admin_page()
                 ]);
 
 
-//                echo "<pre>";
-//                print_r($products);
-
-//                echo $actual_link;
-//                echo "</pre>";
-//                die();
-
                 ?>
 
                 <div class="w-2/4 bg-white p-3">
@@ -155,6 +148,16 @@ function woo_admin_page()
                             </div>
                         </div>
 
+                        <div class="grid grid-cols-2 gap-2 mt-4">
+                            <div>
+                                <input type="text" id="cust_email" class="w-full" placeholder="Email">
+                            </div>
+                            <div>
+                                <input type="text" id="cust_phone" class="w-full" placeholder="Phone">
+                            </div>
+                        </div>
+
+
                         <h2 class="border-b-2 border-gray-400 mb-4 mt-12 text-2xl text-center">Address</h2>
                         <div class="grid grid-cols-2 gap-2">
                             <div>
@@ -200,40 +203,54 @@ add_action('wp_ajax_woo_admin_order_submit', function () {
 
     global $woocommerce;
 
-    $first_name = sanitize_text_field($_POST['first_name']);
-    $last_name = sanitize_text_field($_POST['last_name']);
-    $address_line = sanitize_text_field($_POST['address_line']);
-    $city = sanitize_text_field($_POST['city']);
-    $country = sanitize_text_field($_POST['country']);
-    $total = floatval($_POST['total']);
+    $nonce = $_POST['nonce'];
+
+    $verify = wp_verify_nonce($nonce, 'woo_admin_order_nonce');
+
+    if (!$verify) {
+        echo json_encode(['error' => 'Sorry! You are not verified']);
+
+    } else {
 
 
-    $address = array(
-        'first_name' => $first_name,
-        'last_name' => $last_name,
-        'address_1' => $address_line,
-        'city' => $city,
-        'country' => $country
-    );
-
-    // Now we create the order
-    $order = wc_create_order();
-
-    // The add_product() function below is located in /plugins/woocommerce/includes/abstracts/abstract_wc_order.php
+        $first_name = sanitize_text_field($_POST['first_name']);
+        $last_name = sanitize_text_field($_POST['last_name']);
+        $address_line = sanitize_text_field($_POST['address_line']);
+        $city = sanitize_text_field($_POST['city']);
+        $country = sanitize_text_field($_POST['country']);
+        $email = sanitize_email($_POST['email']);
+        $phone = sanitize_text_field($_POST['phone']);
 
 
-    $product_data = $_POST['product_data'];
+        $address = array(
+            'first_name' => $first_name,
+            'last_name' => $last_name,
+            'email' => $email,
+            'phone' => $phone,
+            'address_1' => $address_line,
+            'city' => $city,
+            'country' => $country
+        );
+
+        // Now we create the order
+        $order = wc_create_order();
+
+        // The add_product() function below is located in /plugins/woocommerce/includes/abstracts/abstract_wc_order.php
 
 
-    foreach ($product_data as $key) {
-        $order->add_product(wc_get_product(intval($key['product_id'])), intval($key['quantity']));
+        $product_data = $_POST['product_data'];
+
+
+        foreach ($product_data as $key) {
+            $order->add_product(wc_get_product(intval($key['product_id'])), intval($key['quantity']));
+        }
+
+        $order->set_address($address, 'billing');
+        $order->set_address($address, 'shipping');
+        $order->calculate_totals();
+        $order->update_status("Completed", 'Imported order', TRUE);
+
+
+        echo json_encode(['success' => 'Successfully order inserted']);
     }
-
-    $order->set_address($address, 'billing');
-    $order->set_address($address, 'shipping');
-    $order->calculate_totals();
-    $order->update_status("Completed", 'Imported order', TRUE);
-
-
-    echo json_encode($_POST);
 });

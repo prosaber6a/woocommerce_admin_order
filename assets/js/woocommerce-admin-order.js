@@ -108,6 +108,8 @@ const productData = JSON.parse(products);
         let address_line = $('#address_line').val();
         let city = $('#city').val();
         let country = $('#country').val();
+        let email = $('#cust_email').val();
+        let phone = $('#cust_phone').val();
         let nonce = $('#nonce').val();
 
         let total = 0;
@@ -115,7 +117,7 @@ const productData = JSON.parse(products);
             total += parseFloat(item.price) * parseInt(item.quantity);
         });
 
-        if (first_name == "" || last_name == "" || address_line == "" || city == "" || country == "") {
+        if (first_name == "" || last_name == "" || address_line == "" || city == "" || country == "" || email == "" || phone == "") {
 
             $('#submit').removeAttr('disabled');
             $('#submit').removeClass('disabled:opacity-50 cursor-wait');
@@ -125,7 +127,6 @@ const productData = JSON.parse(products);
         }
 
 
-
         $.ajax({
             url: url,
             data: {
@@ -133,6 +134,8 @@ const productData = JSON.parse(products);
                 nonce: nonce,
                 action: 'woo_admin_order_submit',
                 last_name: last_name,
+                email: email,
+                phone: phone,
                 address_line: address_line,
                 city: city,
                 country: country,
@@ -142,11 +145,11 @@ const productData = JSON.parse(products);
             type: 'post',
             datatype: 'json',
             success: function (response) {
-                alert('Order created successfully');
+
+                alert('Successfully Order inserted.');
+
+
                 location.reload();
-            },
-            error: function (response) {
-                console.log("error", response)
             }
         });
     });
