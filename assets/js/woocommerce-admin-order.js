@@ -5,87 +5,13 @@ console.log(url)
 const productData = JSON.parse(products);
 ;(function ($) {
     $(document).ready(function () {
-        $('#products_select_box').select2({
-            placeholder: "Select a state",
-            allowClear: true,
-            templateResult: formatState,
-            templateSelection: formatSelect,
-        });
+        
 
         $('#country').select2({
             placeholder: 'Select a country',
             allowClear: true,
         });
     });
-
-
-    function formatState(opt) {
-        if (!opt.id) {
-            return opt.text;
-        }
-
-        let optimage = jQuery(opt.element).attr('data-image');
-        let name = jQuery(opt.element).attr('data-name')
-
-        if (!optimage) {
-            return opt.text;
-        } else {
-            var $opt = jQuery(
-                '<span class="flex gap-1"><img class="align-middle h-12 border-0" src="' + optimage + '" /> <span class="block"><strong>' + opt.text.toUpperCase() + '</strong><br>Name: ' + name + '</span></span>'
-            );
-            return $opt;
-        }
-    }
-
-    function formatSelect(opt) {
-
-        if (opt.id !== '') {
-            let id = parseInt(opt.id);
-
-            for (let i = 0; i < productData.length; i++) {
-                if (productData[i].id === id) {
-                    renderTable(productData[i]);
-                    break;
-                }
-            }
-        }
-
-        if (orderItems.length > 0) {
-            $('#orderitems_table').show();
-        }
-
-        return "Search product by SKU";
-    }
-
-    function renderTable(obj = null) {
-        if (obj === null) {
-            return;
-        }
-
-        let item = {product_id: obj.id, quantity: 1, price: obj.price, name: obj.name};
-
-        orderItems[orderItems.length] = item;
-
-        // let data = $('#orderitems_table tbody').html();
-        let data = "";
-        data += `
-            <tr data-id="${obj.id}" class="border-b-2 border-gray-300 mb-1">
-                <td class="flex gap-4 items-center m-2"><img class="h-12 border-0" src="${obj.img}"> <span class="block">${obj.name}</span></td>
-                <td class="text-center">
-                    <input type="number" name="quantity" onchange="update_quantity(this)" value="1" class="w-16">
-                </td>
-                <td class="text-center">$ ${obj.price}</td>
-                <td class="text-center">
-                    <button type="delete" onclick="remove_row(this)" class="deletebtn hover:text-red-700 text-red-500">Delete</button>
-                </td>
-            </tr>
-        `;
-        $('#orderitems_table tbody').append(data);
-        calculate();
-
-
-    }
-
 
     $('#submit').click(function () {
 
@@ -148,10 +74,53 @@ const productData = JSON.parse(products);
 
                 alert('Successfully Order inserted.');
 
-
+                $('#form')[0].reset();
                 location.reload();
             }
         });
+    });
+
+
+
+    //sku search
+
+
+    $('#product-sku-search').on('keyup', () => {
+        
+        let data = '';
+        let sku = $('#product-sku-search').val().toUpperCase();
+
+        if (sku !== '') {
+            let arr = null;
+
+            for (let i = 0; i < productData.length; i++) {
+                arr = productData[i];
+                
+
+                if (productData && arr.sku.indexOf(sku) != 0) continue;
+
+                
+                data += `
+                <li onclick="renderTable(${arr.id})" class="hover:bg-blue-500 hover:text-white p-2">
+                                    
+                    <div class="flex gap-2">
+                        <img class="w-16" src="${arr.img}" alt="">
+                        <div class="text-left">
+                            <p>SKU: <strong>${arr.sku}</strong></p>
+                            <p>${arr.name}</p>
+                        </div>
+                    </div>
+                    
+                </li>
+                `;
+                
+            }
+
+        }
+
+        $('#search-result').html(data);
+        $('#search-container').removeClass('hidden');
+
     });
 
 
@@ -170,6 +139,51 @@ function remove_row(element) {
     element.parentNode.parentElement.remove();
     calculate();
 }
+
+
+
+function renderTable(id = -1) {
+    console.log(id);
+
+    id = parseInt(id);
+
+    for (let i = 0; i < productData.length; i++) {
+        if (productData[i].id === id) {
+            obj = productData[i];
+        }
+    }
+
+
+    if (obj === null) {
+        return;
+    }
+
+    let item = {product_id: obj.id, quantity: 1, price: obj.price, name: obj.name};
+
+    orderItems[orderItems.length] = item;
+
+    // let data = $('#orderitems_table tbody').html();
+    let data = "";
+    data += `
+        <tr data-id="${obj.id}" class="border-b-2 border-gray-300 mb-1">
+            <td class="flex gap-4 items-center m-2"><img class="h-12 border-0" src="${obj.img}"> <span class="block">${obj.name}</span></td>
+            <td class="text-center">
+                <input type="number" name="quantity" onchange="update_quantity(this)" value="1" class="w-16">
+            </td>
+            <td class="text-center">$ ${obj.price}</td>
+            <td class="text-center">
+                <button type="delete" onclick="remove_row(this)" class="deletebtn hover:text-red-700 text-red-500">Delete</button>
+            </td>
+        </tr>
+    `;
+    jQuery('#search-container').addClass('hidden')
+    jQuery('#orderitems_table tbody').append(data);
+    console.log(data);
+    calculate();
+
+
+}
+
 
 
 function update_quantity(element) {

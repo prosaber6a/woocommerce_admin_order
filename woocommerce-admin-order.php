@@ -32,7 +32,7 @@ function woo_admin_order_assets($screen)
         wp_enqueue_style('tailwind-css', '//unpkg.com/tailwindcss@^2/dist/tailwind.min.css');
 //        wp_enqueue_style('woocommerce-admin-order-css', plugin_dir_url(__FILE__) . '/assets/css/woocommerce-admin-order.css', null, time());
         wp_enqueue_script('select2-js', '//cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js', ['jquery'], null, true);
-        wp_enqueue_script('woocommerce-admin-order-js', plugin_dir_url(__FILE__) . '/assets/js/woocommerce-admin-order.js', null, time(), true);
+        wp_enqueue_script( 'woocommerce-admin-order-js', plugin_dir_url(__FILE__) . '/assets/js/woocommerce-admin-order.js', array(), time(), true );
     }
 }
 
@@ -61,11 +61,11 @@ function woo_admin_page()
 
             <?php
 
-            if (!in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_option('active_plugins')))) {
+            if (!in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_option('active_plugins')))):
                 ?>
                 <h1 class="text-red">Please setup your woocommerce store</h1>
                 <?php
-            } else {
+            else:
 
                 global $woocommerce;
                 $countries_obj = new WC_Countries();
@@ -80,6 +80,24 @@ function woo_admin_page()
                 ]);
 
 
+        
+                $products_arr = [];
+                foreach ($products as $product){
+                    $_thumbnail = wp_get_attachment_image_url($product->image_id, 'thumbnail');
+                    $_product_arr['id'] = $product->id;
+                    $_product_arr['img'] = $_thumbnail;
+                    $_product_arr['price'] = $product->price;
+                    $_product_arr['name'] = $product->name;
+                    $_product_arr['sku'] = $product->sku;
+                    
+                    $products_arr[] = $_product_arr;
+                }
+
+                wp_localize_script('woocommerce-admin-order-js', 'products', json_encode($products_arr));
+                wp_localize_script('woocommerce-admin-order-js', 'action_url', json_encode([admin_url('admin-ajax.php')]));
+                                
+
+
                 ?>
 
                 <div class="w-2/4 bg-white p-3">
@@ -91,31 +109,16 @@ function woo_admin_page()
                         ?>
 
 
-                        <div class="my-4 text-center">
-                            <select name="" class="js-states w-full" id="products_select_box">
-                                <option value="" selected>Select a product</option>
-                                <?php
-                                $products_arr = [];
-                                foreach ($products as $product):
-                                    $_thumbnail = wp_get_attachment_image_url($product->image_id, 'thumbnail');
-                                    $_product_arr['id'] = $product->id;
-                                    $_product_arr['img'] = $_thumbnail;
-                                    $_product_arr['price'] = $product->price;
-                                    $_product_arr['name'] = $product->name;
-                                    $products_arr[] = $_product_arr;
-                                    ?>
-                                    <option value="<?php echo $product->id; ?>" data-image="<?php echo $_thumbnail; ?>"
-                                            data-name="<?php echo $product->name; ?>">
-                                        <?php
-                                        echo "SKU: " . $product->sku;
-                                        ?>
-                                    </option>
-
-                                <?php
-                                endforeach;
-                                ?>
-                            </select>
+                        <input type="text" id="product-sku-search" autocomplete="off"  placeholder="select product by sku" class=" w-full rounded mb-6">
+                        <div class="w-full border border-black relative hidden" id="search-container">
+                            <ul id="search-result" class="absolute z-20 overflow-scroll h-56 bg-white w-full">
+                            
+                            </ul>
                         </div>
+
+
+                        
+                                
 
                         <table id="orderitems_table" class="table-auto w-full">
                             <thead>
@@ -185,12 +188,9 @@ function woo_admin_page()
                     </form>
                 </div>
 
-                <?php
+                <?php endif; ?>
 
-                wp_localize_script('woocommerce-admin-order-js', 'products', json_encode($products_arr));
-                wp_localize_script('woocommerce-admin-order-js', 'action_url', json_encode([admin_url('admin-ajax.php')]));
-            }
-            ?>
+                
         </div>
     </div>
     <?php
