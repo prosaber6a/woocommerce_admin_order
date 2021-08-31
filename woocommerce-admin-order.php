@@ -40,7 +40,7 @@ add_action('admin_enqueue_scripts', 'woo_admin_order_assets');
 
 function woo_admin_order_menu_page()
 {
-    add_menu_page('Create Order', 'Create Order', 'activate_plugins', 'woo-admin-order.php', 'woo_admin_page', 'dashicons-tickets', 6);
+    add_menu_page('Create Order', 'Create Order', 'manage_woocommerce', 'woo-admin-order.php', 'woo_admin_page', 'dashicons-tickets', 6);
 }
 
 
