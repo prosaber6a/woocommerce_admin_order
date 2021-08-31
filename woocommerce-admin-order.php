@@ -110,8 +110,8 @@ function woo_admin_page()
 
 
                         <input type="text" id="product-sku-search" autocomplete="off"  placeholder="select product by sku" class=" w-full rounded mb-6">
-                        <div class="w-full border border-black relative hidden" id="search-container">
-                            <ul id="search-result" class="absolute z-20 overflow-scroll h-56 bg-white w-full">
+                        <div class="w-full relative hidden" id="search-container">
+                            <ul id="search-result" class="absolute z-20 overflow-y-scroll overflow-x-hidden h-56 bg-white w-full border border-black shadow-2xl -mt-7">
                             
                             </ul>
                         </div>

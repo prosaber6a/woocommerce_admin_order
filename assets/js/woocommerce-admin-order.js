@@ -5,7 +5,7 @@ console.log(url)
 const productData = JSON.parse(products);
 ;(function ($) {
     $(document).ready(function () {
-        
+
 
         $('#country').select2({
             placeholder: 'Select a country',
@@ -72,21 +72,22 @@ const productData = JSON.parse(products);
             datatype: 'json',
             success: function (response) {
 
+                $('#form')[0].reset();
                 alert('Successfully Order inserted.');
 
-                $('#form')[0].reset();
                 location.reload();
             }
         });
     });
 
 
-
     //sku search
 
 
     $('#product-sku-search').on('keyup', () => {
-        
+
+        $('#search-container').addClass('hidden');
+
         let data = '';
         let sku = $('#product-sku-search').val().toUpperCase();
 
@@ -95,11 +96,11 @@ const productData = JSON.parse(products);
 
             for (let i = 0; i < productData.length; i++) {
                 arr = productData[i];
-                
+
 
                 if (productData && arr.sku.indexOf(sku) != 0) continue;
 
-                
+
                 data += `
                 <li onclick="renderTable(${arr.id})" class="hover:bg-blue-500 hover:text-white p-2">
                                     
@@ -113,13 +114,17 @@ const productData = JSON.parse(products);
                     
                 </li>
                 `;
-                
+
             }
+
 
         }
 
-        $('#search-result').html(data);
-        $('#search-container').removeClass('hidden');
+        if (data != '') {
+            $('#search-result').html(data);
+            $('#search-container').removeClass('hidden');
+        }
+
 
     });
 
@@ -139,7 +144,6 @@ function remove_row(element) {
     element.parentNode.parentElement.remove();
     calculate();
 }
-
 
 
 function renderTable(id = -1) {
@@ -162,7 +166,6 @@ function renderTable(id = -1) {
 
     orderItems[orderItems.length] = item;
 
-    // let data = $('#orderitems_table tbody').html();
     let data = "";
     data += `
         <tr data-id="${obj.id}" class="border-b-2 border-gray-300 mb-1">
@@ -178,12 +181,10 @@ function renderTable(id = -1) {
     `;
     jQuery('#search-container').addClass('hidden')
     jQuery('#orderitems_table tbody').append(data);
-    console.log(data);
     calculate();
 
 
 }
-
 
 
 function update_quantity(element) {
@@ -194,15 +195,16 @@ function update_quantity(element) {
         console.log(orderItems[i]);
         if (orderItems[i].product_id === id) {
             orderItems[i].quantity = qty;
-            // console.log('update qty');
             break;
         }
     }
+
 
     calculate();
 }
 
 function calculate() {
+
 
     let total_price = 0;
     orderItems.forEach((item) => {
