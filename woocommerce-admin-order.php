@@ -3,7 +3,7 @@
  * Plugin Name: WooCommerce Admin Order
  * Plugin URI:        http://saberhr.me/
  * Description:       Create a custom order page for admin
- * Version:           1.0.0
+ * Version:           1.0.2
  * Requires at least: 5.2
  * Requires PHP:      7.2
  * Author:            Saber Hossen Rabbani
@@ -100,7 +100,7 @@ function woo_admin_page()
 
                 ?>
 
-                <div class="w-2/4 bg-white p-3">
+                <div class="bg-white lg:w-2/4 md:w-3/4 p-3 sm:w-full w-full">
 
                     <form action="<?php echo admin_url('admin-post.php'); ?>" method="post" id="form">
 
